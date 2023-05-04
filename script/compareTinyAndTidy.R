@@ -1,0 +1,42 @@
+suppressMessages({
+    library(gh)
+    library(anytime)
+    library(data.table)
+    library(ggplot2)
+})
+
+getResults <- function(repo, label) {
+    res <- gh(paste0("GET /repos/", repo, "/actions/runs?per_page=100"))
+    D <- rbindlist(lapply(res$workflow_runs,
+                          \(x) data.frame(finish=anytime(x$updated_at),
+                                          start=anytime(x$run_started_at))))
+    D[, duration := as.numeric(difftime(finish, start, units="secs"))]
+    D[, repo := label]
+    fwrite(D, file.path("csv", paste(label, "csv", sep=".")))
+    D
+}
+
+resD <- getResults("eddelbuettel/lim-tidy", "tidy")
+resN <- getResults("eddelbuettel/lim-tiny", "tiny")
+
+## March 1 times are total 'action' run time, not task run-time
+resN[repo=="tiny" & trunc(duration) == 675, duration:=77]
+resD[repo=="tidy" & trunc(duration) == 513, duration:=196]
+## Remove Nov 8 when we one commit borked the usethis yaml resulting in a 10s time (failed)
+resD <- resD[as.IDate(finish) == "2022-11-08" & as.ITime(finish) <= "2022-11-08 04:00:00", badrun := TRUE][is.na(badrun)==TRUE,][, badrun := NULL][]
+
+D <- rbind(resD, resN)
+
+p <- ggplot(D, aes(x=finish, y=duration, color=repo)) +
+    geom_point() + geom_smooth(method="loess", formula="y ~ x", se=TRUE) +
+    ylab("Total Action Run-Time in Seconds") + xlab("") +
+    labs(title="Net time of Continuous Integration: Tiny vs Tidy",
+         subtitle="Running a PostgreSQL query at GitHub Action each week, once with RPostgreSQL ('tiny') and once with RPostgres ('tidy')",
+         caption="Runs are scheduled weekly, scripts have been unchanged but for one DB reference update, plus one Actions update.")
+if (interactive()) p
+
+filename <- file.path("graph", "tiny_vs_tidy.png")
+png(filename, 800, 600)
+p
+dev.off()
+
