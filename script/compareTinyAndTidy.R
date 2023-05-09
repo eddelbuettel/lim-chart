@@ -12,9 +12,12 @@ getResults <- function(repo, label) {
                                           start=anytime(x$run_started_at))))
     D[, duration := as.numeric(difftime(finish, start, units="secs"))]
     D[, repo := label]
-    fwrite(D, file.path("csv", paste(label, "csv", sep=".")))
+    csvfile <- file.path("csv", paste(label, "csv", sep="."))
+    fwrite(D, csvfile, dateTimeAs = "write.csv")
     D
 }
+
+Sys.setenv("TZ" = "America/Chicago")
 
 resD <- getResults("eddelbuettel/lim-tidy", "tidy")
 resN <- getResults("eddelbuettel/lim-tiny", "tiny")
@@ -38,5 +41,6 @@ if (interactive()) p
 filename <- file.path("graph", "tiny_vs_tidy.png")
 png(filename, 800, 600)
 p
-dev.off()
+ignoreme <- dev.off()
 
+if (interactive()) cat("Done.\n")
