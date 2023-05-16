@@ -35,7 +35,8 @@ p <- ggplot(D, aes(x=finish, y=duration, color=repo)) +
     ylab("Total Action Run-Time in Seconds") + xlab("") +
     labs(title="Net time of Continuous Integration: Tiny vs Tidy",
          subtitle="Running a PostgreSQL query at GitHub Action each week, once with RPostgreSQL ('tiny') and once with RPostgres ('tidy')",
-         caption="Runs are scheduled weekly, scripts have been unchanged but for one DB reference update, plus one Actions update.")
+         caption=paste0("Runs are scheduled weekly, scripts have been unchanged but for one DB reference update, plus one Actions update. ",
+                        "Most recent data point is ", format(D[finish==max(finish), as.Date(finish)]), "."))
 if (interactive()) p
 
 filename <- file.path("graph", "tiny_vs_tidy.png")
