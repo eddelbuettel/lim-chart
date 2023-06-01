@@ -5,19 +5,23 @@ suppressMessages({
     library(ggplot2)
 })
 
+#Sys.setenv("TZ" = "UTC")
+Sys.setenv("TZ" = "America/Chicago")
+
 getResults <- function(repo, label) {
     res <- gh(paste0("GET /repos/", repo, "/actions/runs?per_page=100"))
     D <- rbindlist(lapply(res$workflow_runs,
-                          \(x) data.frame(finish=anytime(x$updated_at),
-                                          start=anytime(x$run_started_at))))
+                          \(x) data.frame(finish=utctime(x$updated_at, tz="UTC"),
+                                          start=utctime(x$run_started_at, tz="UTC"))))
     D[, duration := as.numeric(difftime(finish, start, units="secs"))]
     D[, repo := label]
     csvfile <- file.path("csv", paste(label, "csv", sep="."))
-    fwrite(D, csvfile, dateTimeAs = "write.csv")
-    D
-}
 
-Sys.setenv("TZ" = "America/Chicago")
+    OD <- fread(csvfile)
+    ND <- rbind(D[as.IDate(finish) > max(OD[,as.IDate(finish)])], OD)
+    fwrite(ND, csvfile)
+    ND
+}
 
 resD <- getResults("eddelbuettel/lim-tidy", "tidy")
 resN <- getResults("eddelbuettel/lim-tiny", "tiny")
