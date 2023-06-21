@@ -1,0 +1,53 @@
+# Run CI for R using https://eddelbuettel.github.io/r-ci/
+
+name: ci
+
+on:
+  #push:
+  #pull_request:
+  schedule:
+  - cron: "11 3 * * 2"
+  workflow_dispatch:
+
+env:
+  USE_BSPM: "true"
+  _R_CHECK_FORCE_SUGGESTS_: "false"
+
+jobs:
+  ci:
+    strategy:
+      matrix:
+        include:
+          #- {os: macOS-latest}
+          - {os: ubuntu-latest}
+
+    runs-on: ${{ matrix.os }}
+
+    permissions:
+      # Give default GITHUB_TOKEN write permission to commit and push the changed files back to repo.
+      contents: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get Script
+        run: curl -OLs https://eddelbuettel.github.io/r-ci/run.sh && chmod 0755 run.sh
+
+      - name: Bootstrap
+        run: ./run.sh bootstrap
+
+      - name: Dependencies
+        run: ./run.sh install_aptget r-cran-gh r-cran-anytime r-cran-data.table r-cran-ggplot2
+
+      - name: Update
+        run: Rscript script/compareTinyAndTidy.R
+
+      - name: Commit and push
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: '["graph/tiny_vs_tidy.png", "csv/tidy.csv", "csv/tiny.csv"]'
+          push: true
+          default_author: github_actions
+          message: 'Update chart and data'
+
