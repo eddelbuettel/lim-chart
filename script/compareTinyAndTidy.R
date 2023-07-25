@@ -14,6 +14,9 @@ getResults <- function(repo, label) {
                           \(x) data.frame(finish=utctime(x$updated_at, tz="UTC"),
                                           start=utctime(x$run_started_at, tz="UTC"))))
     D[, duration := as.numeric(difftime(finish, start, units="secs"))]
+    ## starting July 2023 we get false finish time for earliest starts in data set
+    ## leading to contaminated data sets; this filters the bad ones out
+    D <- D[duration < 3600*24, ]
     D[, repo := label]
     csvfile <- file.path("csv", paste(label, "csv", sep="."))
 
