@@ -41,10 +41,12 @@ p <- ggplot(D, aes(x=finish, y=duration, color=repo)) +
     geom_point() + geom_smooth(method="loess", formula="y ~ x", se=TRUE) +
     ylab("Total Action Run-Time in Seconds") + xlab("") +
     scale_y_continuous(limits = c(0, NA)) +
+    tinythemes::theme_ipsum_rc() +
     labs(title="Net time of Continuous Integration: Tiny vs Tidy",
          subtitle="Running a PostgreSQL query at GitHub Action each week, once with RPostgreSQL ('tiny') and once with RPostgres ('tidy')",
          caption=paste0("Runs are scheduled weekly, scripts have been unchanged but for one DB reference update, plus one Actions update. ",
                         "Most recent data point is ", format(D[finish==max(finish), as.Date(finish)]), "."))
+
 if (interactive()) p
 
 filename <- file.path("graph", "tiny_vs_tidy.png")

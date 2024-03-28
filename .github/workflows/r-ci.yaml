@@ -10,7 +10,6 @@ on:
   workflow_dispatch:
 
 env:
-  USE_BSPM: "true"
   _R_CHECK_FORCE_SUGGESTS_: "false"
 
 jobs:
@@ -38,7 +37,7 @@ jobs:
         run: ./run.sh bootstrap
 
       - name: Dependencies
-        run: ./run.sh install_aptget r-cran-gh r-cran-anytime r-cran-data.table r-cran-ggplot2
+        run: ./run.sh install_aptget r-cran-gh r-cran-anytime r-cran-data.table r-cran-ggplot2 r-cran-tinythemes
 
       - name: Update
         run: Rscript script/compareTinyAndTidy.R
