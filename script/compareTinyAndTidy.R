@@ -36,6 +36,8 @@ resD[repo=="tidy" & trunc(duration) == 513, duration:=196]
 resD <- resD[as.IDate(finish) == "2022-11-08" & as.ITime(finish) <= "2022-11-08 04:00:00", badrun := TRUE][is.na(badrun)==TRUE,][, badrun := NULL][]
 
 D <- rbind(resD, resN)
+## 2024-07-30 runs failed as the remote server did not respond (see Actions for lim-{tiny,tidy}
+D <- D[as.Date(finish) != as.Date("2024-07-30"), ]
 
 p <- ggplot(D, aes(x=finish, y=duration, color=repo)) +
     geom_point() + geom_smooth(method="loess", formula="y ~ x", se=TRUE) +
@@ -50,7 +52,7 @@ p <- ggplot(D, aes(x=finish, y=duration, color=repo)) +
 if (interactive()) p
 
 filename <- file.path("graph", "tiny_vs_tidy.png")
-png(filename, 800, 600)
+png(filename, 1200, 600)
 p
 ignoreme <- dev.off()
 
