@@ -28,22 +28,19 @@ jobs:
     
     steps:
       - name: Checkout 
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup
-        uses: eddelbuettel/github-actions/r-ci-setup@master
-
-      - name: Bootstrap
-        run: ./run.sh bootstrap
+        uses: eddelbuettel/github-actions/r-ci@master
 
       - name: Dependencies
-        run: ./run.sh install_aptget r-cran-gh r-cran-anytime r-cran-data.table r-cran-ggplot2 r-cran-tinythemes
+        run: ./run.sh install_r gh anytime data.table ggplot2 tinythemes
 
       - name: Update
         run: Rscript script/compareTinyAndTidy.R
 
       - name: Commit and push
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@v10
         with:
           add: '["graph/tiny_vs_tidy.png", "csv/tidy.csv", "csv/tiny.csv"]'
           push: true
