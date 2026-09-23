@@ -30,14 +30,18 @@ resD <- getResults("eddelbuettel/lim-tidy", "tidy")
 resN <- getResults("eddelbuettel/lim-tiny", "tiny")
 
 ## March 1 times are total 'action' run time, not task run-time
-resN[repo=="tiny" & trunc(duration) == 675, duration:=77]
-resD[repo=="tidy" & trunc(duration) == 513, duration:=196]
+resN[repo=="tiny" & trunc(duration) == 675, duration := 77]
+resD[repo=="tidy" & trunc(duration) == 513, duration := 196]
 ## Remove Nov 8 when we one commit borked the usethis yaml resulting in a 10s time (failed)
 resD <- resD[as.IDate(finish) == "2022-11-08" & as.ITime(finish) <= "2022-11-08 04:00:00", badrun := TRUE][is.na(badrun)==TRUE,][, badrun := NULL][]
+## Remove August 4 because r2u was blocked at U of Illinois and this script has no fallback
+resN <- resN[ as.Date(start) != as.Date("2026-08-04"),]
 
 D <- rbind(resD, resN)
-## 2024-07-30 runs failed as the remote server did not respond (see Actions for lim-{tiny,tidy}
-D <- D[as.Date(finish) != as.Date("2024-07-30"), ]
+## 2024-07-30 and 2026-06-30 runs failed as the remote server did not respond; 2026-09-22 had both
+## a remote server issue (tiny) and a build issue (tidy);  see Actions for lim-{tiny,tidy}
+badDates <- as.Date(c("2024-07-30", "2026-06-30", "2026-09-22"))
+D <- D[!(as.Date(finish) %in% badDates),]
 
 p <- ggplot(D, aes(x=finish, y=duration, color=repo)) +
     geom_point() + geom_smooth(method="loess", formula="y ~ x", se=TRUE) +
