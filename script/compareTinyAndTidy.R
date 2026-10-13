@@ -40,7 +40,8 @@ resN <- resN[ as.Date(start) != as.Date("2026-08-04"),]
 D <- rbind(resD, resN)
 ## 2024-07-30 and 2026-06-30 runs failed as the remote server did not respond; 2026-09-22 had both
 ## a remote server issue (tiny) and a build issue (tidy);  see Actions for lim-{tiny,tidy}
-badDates <- as.Date(c("2024-07-30", "2026-06-30", "2026-09-22", "2026-09-29"))
+## ditto 2026-09-29, 2026-10-06, 2026-10-13
+badDates <- as.Date(c("2024-07-30", "2026-06-30", "2026-09-22", "2026-09-29", "2026-10-06", "2026-10-13"))
 D <- D[!(as.Date(finish) %in% badDates),]
 
 p <- ggplot(D, aes(x=finish, y=duration, color=repo)) +
